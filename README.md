@@ -20,4 +20,10 @@ También sirve tal cual en Netlify, Vercel o Cloudflare Pages (arrastrar la carp
 
 ## Botón de descarga
 
-Apunta a `https://github.com/KevinAndresG/PersonalAssistant/releases/latest`. Para que funcione, el repo de la app debe ser público y tener un *Release* con `Buddy Setup x.y.z.exe` adjunto (`npm run dist` en el proyecto de la app).
+Descarga directa: `https://github.com/KevinAndresG/PersonalAssistant/releases/latest/download/Buddy-Setup.exe`. Siempre apunta al último Release, así que la web no cambia al sacar versiones nuevas. El asset debe llamarse exactamente `Buddy-Setup.exe`:
+
+```powershell
+npm run dist
+Copy-Item "dist\Buddy Setup X.Y.Z.exe" dist\Buddy-Setup.exe
+gh release create vX.Y.Z dist\Buddy-Setup.exe --title "Buddy X.Y.Z" --notes "..."
+```
