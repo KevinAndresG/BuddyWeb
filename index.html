@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buddy · Asistente de escritorio gratis</title>
+<meta name="description" content="Buddy es un robotito para Windows que vive encima de tus apps: le hablas, te responde y controla tu PC. 100% gratis, sin pagos ni suscripciones.">
+<meta property="og:title" content="Buddy · Tu asistente de escritorio gratis">
+<meta property="og:description" content="Háblale y controla tu PC: abre apps, escribe, lee la pantalla, manda mensajes. Gratis, sin pagos.">
+<meta property="og:image" content="icon.png">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c: #a8dce6; --accent: #e8a6c8; --belly: #f3ecc8; --glow: #8ff4ff; --screen: #1a2230;
+  --bg: #0e1220; --bg2: #151a2c; --card: #1b2136; --line: #2a3150; --text: #eef1ff; --muted: #a3abc9;
+  --ok: #5dffa0;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 Nunito, system-ui, sans-serif; overflow-x: hidden; }
+h1, h2, h3 { font-family: Fredoka, Nunito, sans-serif; line-height: 1.15; margin: 0 0 .5em; }
+a { color: var(--glow); }
+code, kbd { font-family: ui-monospace, Consolas, monospace; font-size: .88em; background: #0008; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+section { padding: 80px 0; }
+.eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .8rem; }
+.lead { color: var(--muted); font-size: 1.15rem; max-width: 640px; }
+
+/* nav */
+nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); background: #0e1220cc; border-bottom: 1px solid var(--line); }
+nav .wrap { display: flex; align-items: center; gap: 20px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 1.3rem Fredoka, sans-serif; color: var(--text); text-decoration: none; margin-right: auto; }
+.brand img { width: 32px; height: 32px; }
+nav .links a { color: var(--muted); text-decoration: none; font-weight: 600; margin-left: 18px; }
+nav .links a:hover { color: var(--text); }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 999px; font-weight: 700; text-decoration: none; border: 0; cursor: pointer; font-size: 1rem; transition: transform .15s, box-shadow .15s; }
+.btn:hover { transform: translateY(-2px); }
+.btn.primary { background: linear-gradient(135deg, var(--glow), var(--c)); color: #0b1424; box-shadow: 0 8px 30px #8ff4ff40; }
+.btn.ghost { color: var(--text); border: 1px solid var(--line); background: var(--card); }
+.btn.small { padding: 8px 16px; font-size: .9rem; }
+
+/* hero */
+.hero { padding: 70px 0 60px; position: relative; }
+.hero::before { content: ""; position: absolute; inset: -200px 0 auto; height: 700px; background: radial-gradient(600px 400px at 75% 40%, #8ff4ff22, transparent 70%), radial-gradient(500px 400px at 15% 20%, #e8a6c822, transparent 70%); pointer-events: none; }
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 50px; align-items: center; position: relative; }
+.hero h1 { font-size: clamp(2.3rem, 5vw, 3.6rem); }
+.hero h1 span { background: linear-gradient(90deg, var(--glow), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 28px; }
+.badge { padding: 6px 12px; border-radius: 999px; background: #5dffa018; border: 1px solid #5dffa055; color: var(--ok); font-weight: 700; font-size: .88rem; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.note { color: var(--muted); font-size: .85rem; margin-top: 12px; }
+
+/* fake desktop */
+.desk { position: relative; aspect-ratio: 4 / 3.3; border-radius: 18px; border: 1px solid var(--line); background: linear-gradient(160deg, #23305a, #141a30 60%); overflow: hidden; box-shadow: 0 30px 80px #0009; }
+.desk .bar { height: 30px; background: #0006; display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+.desk .bar i { width: 10px; height: 10px; border-radius: 50%; background: #fff3; }
+.desk .win { position: absolute; left: 6%; top: 15%; width: 55%; height: 46%; border-radius: 10px; background: #ffffff10; border: 1px solid #ffffff1a; }
+.desk .win::before { content: ""; position: absolute; left: 10px; right: 10px; top: 12px; height: 8px; border-radius: 4px; background: #ffffff20; box-shadow: 0 20px 0 #ffffff12, 0 36px 0 #ffffff12, 0 52px 0 #ffffff0c; width: 70%; }
+.desk .task { position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: #0008; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.desk .task i { width: 18px; height: 18px; border-radius: 5px; background: #ffffff26; }
+.desk .task i.on { background: var(--c); }
+.you { position: absolute; left: 6%; bottom: 18%; max-width: 55%; padding: 9px 14px; border-radius: 16px 16px 16px 4px; background: #2fbf71; color: #fff; font-weight: 600; font-size: .95rem; opacity: 0; transform: translateY(8px); transition: .3s; }
+.you.show { opacity: 1; transform: none; }
+.you::before { content: "🎤 "; }
+.stage { position: absolute; right: 4%; bottom: 40px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.bubble { max-width: 250px; min-height: 40px; padding: 10px 14px; border-radius: 16px 16px 4px 16px; background: #1b1f2af0; color: #f2f4ff; box-shadow: 0 4px 18px #0006; font-size: .95rem; opacity: 0; transition: opacity .25s; }
+.bubble.show { opacity: 1; }
+.moods { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 14px; }
+.moods button { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px; padding: 6px 12px; font: 600 .85rem Nunito, sans-serif; cursor: pointer; }
+.moods button:hover, .moods button.on { color: var(--text); border-color: var(--glow); }
+
+/* bot (same art + states as the app) */
+#bot svg { display: block; overflow: visible; width: 150px; height: 170px; }
+#rig, #body, .up, .fa, #head, #antSwing, #shadow { transform-box: view-box; }
+#body { animation: bob 3s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-5px) rotate(1.5deg); } }
+#head { animation: tilt 5s ease-in-out infinite; }
+@keyframes tilt { 30% { transform: rotate(-4deg); } 60% { transform: rotate(3deg); } }
+#antSwing { animation: swing 2.5s ease-in-out infinite; }
+@keyframes swing { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+#armL .up { transform: rotate(18deg); animation: armL 3s ease-in-out infinite; }
+#armR .up { transform: rotate(-18deg); animation: armR 3s ease-in-out infinite; }
+@keyframes armL { 50% { transform: rotate(24deg); } }
+@keyframes armR { 50% { transform: rotate(-24deg); } }
+#shadow { transform-box: fill-box; transform-origin: center; animation: shadow 3s ease-in-out infinite; }
+@keyframes shadow { 50% { transform: scaleX(.85); opacity: .15; } }
+#eyes { transition: transform .12s linear; }
+#eyeShift { transition: transform .25s; }
+.eye > * { animation: blink 4.5s infinite; transition: transform .2s; transform-box: fill-box; transform-origin: center; }
+@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+.happyEye, #talk, #zzz, #ring { display: none; }
+
+.listening { --glow: #5dffa0; }
+.listening #ring { display: block; animation: ring 1.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.listening .eye > * { animation: none; transform: scale(1.18); }
+@keyframes ring { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.25); opacity: 0; } }
+.thinking #eyeShift { transform: translate(3px, -4px); }
+.thinking #ant { animation: flash .5s infinite alternate; }
+.thinking #armR .up { animation: none; transform: rotate(-150deg); transition: transform .4s; }
+@keyframes flash { to { fill: #ffd86b; } }
+.speaking #smile { display: none; }
+.speaking #talk { display: block; animation: talk .2s infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes talk { to { transform: scaleY(3.2); } }
+.happy .eye, .happy #smile { display: none; }
+.happy .happyEye { display: block; }
+.happy #body { animation: jump .5s ease-in-out 2; }
+.happy #armL .up { animation: waveL .3s ease-in-out infinite alternate; }
+.happy #armR .up { animation: waveR .3s ease-in-out infinite alternate; }
+@keyframes jump { 50% { transform: translateY(-16px); } }
+@keyframes waveL { from { transform: rotate(120deg); } to { transform: rotate(160deg); } }
+@keyframes waveR { from { transform: rotate(-120deg); } to { transform: rotate(-160deg); } }
+.sleeping .eye > * { animation: none; transform: scaleY(.1); }
+.sleeping #zzz { display: block; animation: zz 2s infinite; }
+.sleeping #ant { opacity: .3; }
+.sleeping #body { animation: breathe 4s ease-in-out infinite; }
+.sleeping #head { animation: none; transform: rotate(8deg); transition: transform .6s; }
+@keyframes breathe { 50% { transform: translateY(2px) scaleY(.98); } }
+@keyframes zz { 50% { transform: translateY(-6px); opacity: .5; } }
+
+/* free strip */
+.free { background: var(--bg2); border-block: 1px solid var(--line); padding: 46px 0; }
+.free .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; }
+.free b { display: block; font: 700 1.9rem Fredoka, sans-serif; color: var(--glow); }
+.free span { color: var(--muted); font-size: .95rem; }
+
+/* features */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 36px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; transition: transform .2s, border-color .2s; }
+.card:hover { transform: translateY(-4px); border-color: #8ff4ff66; }
+.card .ico { font-size: 1.8rem; }
+.card h3 { font-size: 1.15rem; margin: 10px 0 6px; }
+.card p { margin: 0; color: var(--muted); font-size: .95rem; }
+.card em { display: block; margin-top: 10px; color: var(--belly); font-style: normal; font-size: .88rem; }
+
+/* guide */
+.steps { counter-reset: s; display: grid; gap: 16px; margin-top: 36px; }
+.step { counter-increment: s; display: grid; grid-template-columns: 54px 1fr; gap: 18px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+.step::before { content: counter(s); display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, var(--accent), var(--glow)); color: #0b1424; font: 700 1.5rem Fredoka, sans-serif; }
+.step h3 { margin-bottom: 6px; }
+.step p, .step li { color: var(--muted); }
+.step ol, .step ul { padding-left: 20px; margin: 6px 0 0; }
+.tables { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; font-size: .95rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { background: #0004; font-family: Fredoka, sans-serif; font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { white-space: nowrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chips span { background: #0005; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: .9rem; color: var(--text); }
+
+/* safety + faq */
+.safe { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 30px; }
+details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; margin-top: 12px; }
+summary { cursor: pointer; font-weight: 700; }
+details p { color: var(--muted); margin: 10px 0 0; }
+
+.final { text-align: center; }
+.final .bigbot { display: inline-block; animation: float 4s ease-in-out infinite; }
+@keyframes float { 50% { transform: translateY(-10px); } }
+footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--muted); font-size: .9rem; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .free .wrap { grid-template-columns: repeat(2, 1fr); }
+  .tables { grid-template-columns: 1fr; }
+  nav .links a:not(.btn) { display: none; }
+  section { padding: 60px 0; }
+}
+@media (max-width: 480px) {
+  #bot svg { width: 110px; height: 125px; }
+  .bubble { max-width: 190px; font-size: .85rem; }
+  .you { font-size: .82rem; max-width: 60%; }
+  .step { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#"><img src="icon.png" alt="">Buddy</a>
+  <div class="links">
+    <a href="#que-hace">Qué hace</a>
+    <a href="#guia">Guía</a>
+    <a href="#faq">Preguntas</a>
+    <a class="btn primary small" href="#descargar">Descargar</a>
+  </div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div>
+    <p class="eyebrow">Asistente de escritorio para Windows</p>
+    <h1>Un robotito que <span>escucha, habla y controla tu PC</span></h1>
+    <p class="lead">Buddy vive encima de todas tus apps. Le hablas o le escribes, te responde con voz y hace las cosas por ti: abre programas, escribe, lee la pantalla, manda mensajes y mucho más.</p>
+    <div class="badges">
+      <span class="badge">✓ 100% gratis</span>
+      <span class="badge">✓ Sin suscripciones</span>
+      <span class="badge">✓ Sin tarjeta</span>
+      <span class="badge">✓ Código abierto</span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#descargar">⬇ Descargar para Windows</a>
+      <a class="btn ghost" href="#guia">Ver la guía</a>
+    </div>
+    <p class="note">Windows 10/11 · Solo necesitas una API key gratuita de Groq (2 minutos).</p>
+  </div>
+
+  <div>
+    <div class="desk" aria-label="Demostración animada de Buddy">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="win"></div>
+      <div class="you" id="you"></div>
+      <div class="stage">
+        <div class="bubble" id="bubble"></div>
+        <div id="bot" class="idle">
+          <svg viewBox="0 0 150 170" role="img" aria-label="Buddy, el robot asistente">
+            <defs>
+              <clipPath id="eggClip"><path d="M70 92 C96 92 102 116 102 128 C102 146 88 156 70 156 C52 156 38 146 38 128 C38 116 44 92 70 92Z"/></clipPath>
+              <radialGradient id="shine" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></radialGradient>
+              <filter id="glowF" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <ellipse id="shadow" cx="70" cy="165" rx="26" ry="4" fill="#000" opacity=".25"/>
+            <g id="rig" transform="translate(70 128)"><g id="body">
+              <g transform="translate(-70 -128)">
+                <ellipse cx="70" cy="155" rx="15" ry="6" fill="var(--accent)"/>
+                <g clip-path="url(#eggClip)">
+                  <rect x="30" y="88" width="80" height="70" fill="var(--c)"/>
+                  <path d="M30 128 C46 116 58 124 70 120 C82 116 94 122 110 126 V160 H30Z" fill="var(--belly)"/>
+                  <rect x="30" y="88" width="80" height="70" fill="url(#shine)"/>
+                </g>
+              </g>
+              <g id="armL" transform="translate(-28 -18)"><g class="up">
+                <rect x="-7" y="0" width="14" height="20" rx="7" fill="var(--c)" stroke="#83abb3" stroke-width="1"/>
+                <g transform="translate(0 16)"><g class="fa">
+                  <rect x="-7" y="-3" width="14" height="18" rx="7" fill="var(--c)" stroke="#83abb3" stroke-width="1"/>
+                  <ellipse cx="0" cy="16" rx="7.5" ry="6.5" fill="var(--accent)"/>
+                </g></g>
+                <circle r="7.5" fill="var(--accent)"/>
+              </g></g>
+              <g id="armR" transform="translate(28 -18)"><g class="up">
+                <rect x="-7" y="0" width="14" height="20" rx="7" fill="var(--c)" stroke="#83abb3" stroke-width="1"/>
+                <g transform="translate(0 16)"><g class="fa">
+                  <rect x="-7" y="-3" width="14" height="18" rx="7" fill="var(--c)" stroke="#83abb3" stroke-width="1"/>
+                  <ellipse cx="0" cy="16" rx="7.5" ry="6.5" fill="var(--accent)"/>
+                </g></g>
+                <circle r="7.5" fill="var(--accent)"/>
+              </g></g>
+              <g transform="translate(0 -36)"><g id="head">
+                <g transform="translate(-70 -92)">
+                  <g transform="translate(70 28)"><g id="antSwing">
+                    <line x1="0" y1="0" x2="0" y2="-14" stroke="var(--belly)" stroke-width="3" stroke-linecap="round"/>
+                    <circle id="ant" cy="-18" r="6" fill="var(--accent)" filter="url(#glowF)"/>
+                    <circle cx="-2" cy="-20" r="2" fill="#fff" opacity=".7"/>
+                  </g><ellipse cx="0" cy="2" rx="6" ry="4" fill="var(--accent)"/></g>
+                  <circle id="ring" cx="70" cy="60" r="44" fill="none" stroke="var(--glow)" stroke-width="3"/>
+                  <ellipse cx="31" cy="62" rx="6" ry="11" fill="var(--belly)"/><ellipse cx="29" cy="62" rx="4" ry="8" fill="var(--accent)"/>
+                  <ellipse cx="109" cy="62" rx="6" ry="11" fill="var(--belly)"/><ellipse cx="111" cy="62" rx="4" ry="8" fill="var(--accent)"/>
+                  <ellipse cx="70" cy="60" rx="38" ry="33" fill="var(--c)"/>
+                  <ellipse cx="70" cy="60" rx="38" ry="33" fill="url(#shine)"/>
+                  <ellipse cx="70" cy="62" rx="29" ry="24" fill="var(--belly)"/>
+                  <ellipse cx="70" cy="62" rx="25.5" ry="20.5" fill="var(--screen)"/>
+                  <g id="eyes"><g id="eyeShift" filter="url(#glowF)">
+                    <g class="eye" transform="translate(59 58)"><circle r="7.5" fill="var(--glow)"/><circle r="5" fill="var(--screen)"/><circle cx="1.5" cy="-1.5" r="1.8" fill="#fff"/></g>
+                    <g class="eye" transform="translate(81 58)"><circle r="7.5" fill="var(--glow)"/><circle r="5" fill="var(--screen)"/><circle cx="1.5" cy="-1.5" r="1.8" fill="#fff"/></g>
+                    <path class="happyEye" d="M53 60 Q59 51 65 60 M75 60 Q81 51 87 60" stroke="var(--glow)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                  </g></g>
+                  <g filter="url(#glowF)">
+                    <path id="smile" d="M63 69 Q70 78 77 69Z" fill="var(--glow)"/>
+                    <ellipse id="talk" cx="70" cy="72" rx="6" ry="2" fill="var(--glow)"/>
+                  </g>
+                  <circle cx="50" cy="71" r="3.5" fill="var(--accent)" opacity=".55"/><circle cx="90" cy="71" r="3.5" fill="var(--accent)" opacity=".55"/>
+                  <text id="zzz" x="104" y="30" fill="var(--glow)" font-size="16" font-weight="700">z z</text>
+                </g>
+              </g></g>
+            </g></g>
+          </svg>
+        </div>
+      </div>
+      <div class="task"><i></i><i></i><i class="on"></i><i></i><i></i></div>
+    </div>
+    <div class="moods" id="moods">
+      <button data-m="listening">🎤 Escucha</button>
+      <button data-m="thinking">💭 Piensa</button>
+      <button data-m="speaking">🗣 Habla</button>
+      <button data-m="happy">🎉 Feliz</button>
+      <button data-m="sleeping">😴 Duerme</button>
+    </div>
+  </div>
+</div></header>
+
+<div class="free"><div class="wrap">
+  <div><b>$0</b><span>Para siempre. Sin planes premium.</span></div>
+  <div><b>0</b><span>Tarjetas de crédito pedidas</span></div>
+  <div><b>20+</b><span>Acciones sobre tu PC</span></div>
+  <div><b>Voz</b><span>Neuronal y natural, en español</span></div>
+</div></div>
+
+<section id="que-hace"><div class="wrap">
+  <p class="eyebrow">Qué puede hacer</p>
+  <h2>Controla casi todo tu PC con la voz</h2>
+  <p class="lead">Dile lo que quieres con tus palabras. Buddy entiende, decide qué hacer y lo ejecuta. Puede encadenar varios pasos: abre, espera, escribe, pulsa y te confirma.</p>
+  <div class="grid">
+    <div class="card"><div class="ico">🗣️</div><h3>Conversa contigo</h3><p>Le hablas o le escribes y responde con una voz neuronal natural, frase a frase, mientras piensa.</p><em>"Explícame qué es un VPN"</em></div>
+    <div class="card"><div class="ico">🚀</div><h3>Abre y cierra apps</h3><p>Cualquier programa del menú Inicio. Trae ventanas al frente, minimiza todo o lista lo que tienes abierto.</p><em>"Abre Spotify y cierra Word"</em></div>
+    <div class="card"><div class="ico">⌨️</div><h3>Escribe por ti</h3><p>Escribe textos en la app activa y pulsa atajos de teclado como Ctrl+C, Alt+F4 o Enter.</p><em>"Escribe: llego en 10 minutos"</em></div>
+    <div class="card"><div class="ico">👀</div><h3>Lee la pantalla</h3><p>Lee la ventana activa: títulos, botones, textos e incluso la URL del navegador.</p><em>"¿Qué página tengo abierta?"</em></div>
+    <div class="card"><div class="ico">🖼️</div><h3>Ve lo que tú ves</h3><p>Toma una captura y la analiza con un modelo de visión para describirte imágenes o lo que hay en pantalla.</p><em>"¿Qué se ve en esta foto?"</em></div>
+    <div class="card"><div class="ico">🖱️</div><h3>Pulsa botones</h3><p>Hace clic en botones y campos por su nombre visible, sin coordenadas.</p><em>"En la calculadora pulsa 9 + 3 ="</em></div>
+    <div class="card"><div class="ico">🎧</div><h3>Escucha tu PC</h3><p>Graba el audio que suena (un video, una llamada) y lo transcribe o resume.</p><em>"Escucha este video y resúmelo"</em></div>
+    <div class="card"><div class="ico">💬</div><h3>Manda mensajes</h3><p>Busca el chat en WhatsApp, Telegram o Discord, escribe y envía. Siempre te pide permiso antes de enviar.</p><em>"Dile a Ana que ya voy"</em></div>
+    <div class="card"><div class="ico">🔊</div><h3>Música y volumen</h3><p>Sube, baja, silencia. Pausa, siguiente y anterior en cualquier reproductor.</p><em>"Siguiente canción"</em></div>
+    <div class="card"><div class="ico">🌐</div><h3>Webs, búsquedas y archivos</h3><p>Abre páginas, busca en Google, abre carpetas y archivos, lee y escribe el portapapeles.</p><em>"Busca el clima de mañana"</em></div>
+    <div class="card"><div class="ico">⚡</div><h3>PowerShell</h3><p>Ejecuta comandos y lee el resultado. Lo peligroso (borrar, apagar, descargar) siempre pide permiso.</p><em>"¿Cuánto espacio libre tengo?"</em></div>
+    <div class="card"><div class="ico">👂</div><h3>Manos libres</h3><p>Escucha todo el tiempo y responde solo cuando dices su nombre. Tú eliges la palabra: "Buddy", "Jarvis"…</p><em>"Oye Buddy, ¿qué hora es?"</em></div>
+  </div>
+</div></section>
+
+<section style="background:var(--bg2);border-block:1px solid var(--line)"><div class="wrap">
+  <p class="eyebrow">Con personalidad</p>
+  <h2>Siempre a la vista, nunca estorba</h2>
+  <div class="grid">
+    <div class="card"><div class="ico">📌</div><h3>Siempre encima</h3><p>Ventana transparente sin marco. Los clics en las zonas vacías atraviesan hacia tus apps.</p></div>
+    <div class="card"><div class="ico">👁️</div><h3>Te sigue con la mirada</h3><p>Sus ojos siguen tu cursor, parpadea, se duerme si no lo usas y salta de alegría al terminar. Prueba a mover el mouse aquí arriba.</p></div>
+    <div class="card"><div class="ico">⌨️</div><h3>Atajos desde cualquier app</h3><p><kbd>Ctrl+Alt+B</kbd> para hablar y <kbd>Ctrl+Alt+T</kbd> para escribir. Los cambias cuando quieras.</p></div>
+    <div class="card"><div class="ico">🧠</div><h3>Elige su cerebro</h3><p>Groq (gratis y rapidísimo), tu plan de Claude vía CLI, u Ollama 100% local en tu PC.</p></div>
+  </div>
+</div></section>
+
+<section id="guia"><div class="wrap">
+  <p class="eyebrow">Guía rápida</p>
+  <h2>Listo en 3 minutos</h2>
+  <div class="steps">
+    <div class="step"><div>
+      <h3>Descarga e instala</h3>
+      <ol>
+        <li>Descarga <code>Buddy Setup.exe</code> desde la <a href="#descargar">sección de descarga</a>.</li>
+        <li>Ejecútalo y elige la carpeta. Crea accesos en el Escritorio y el Menú Inicio.</li>
+        <li>Si Windows SmartScreen avisa de "editor desconocido": <b>Más información → Ejecutar de todas formas</b> (el instalador no está firmado, es normal en proyectos personales).</li>
+      </ol>
+    </div></div>
+    <div class="step"><div>
+      <h3>Consigue tu API key gratis de Groq</h3>
+      <ol>
+        <li>Entra a <a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a> y crea una cuenta (no pide tarjeta).</li>
+        <li>Genera una <b>API key</b> (empieza por <code>gsk_</code>).</li>
+        <li>En Buddy: pasa el mouse por encima → <b>⚙ Ajustes</b> → pégala en <i>Groq API key</i> → <b>Guardar</b>.</li>
+      </ol>
+      <p>La misma key sirve para el cerebro y para escucharte. Sin key, los comandos locales siguen funcionando.</p>
+    </div></div>
+    <div class="step"><div>
+      <h3>Háblale</h3>
+      <p>Haz clic en el robot o pulsa <kbd>Ctrl+Alt+B</kbd> y habla. Se detiene solo cuando te callas. Para escribir: <kbd>Ctrl+Alt+T</kbd>. <b>Arrastra</b> al bot para moverlo; recuerda su posición. <kbd>Esc</kbd> lo calla.</p>
+      <div class="tables">
+        <table>
+          <tr><th>Botón</th><th>Qué hace</th></tr>
+          <tr><td>🎤</td><td>Te escucha una vez</td></tr>
+          <tr><td>⌨</td><td>Cajita de texto</td></tr>
+          <tr><td>💬</td><td>Ver / ocultar la última respuesta</td></tr>
+          <tr><td>👂</td><td>Manos libres on/off</td></tr>
+        </table>
+        <table>
+          <tr><th>Botón</th><th>Qué hace</th></tr>
+          <tr><td>⚙</td><td>Ajustes</td></tr>
+          <tr><td>🧹</td><td>Olvidar la conversación</td></tr>
+          <tr><td>🙈</td><td>Ocultar (vuelve desde la bandeja)</td></tr>
+          <tr><td>✕</td><td>Salir</td></tr>
+        </table>
+      </div>
+    </div></div>
+    <div class="step"><div>
+      <h3>Activa el manos libres (opcional)</h3>
+      <p>Pulsa 👂. Buddy escucha siempre pero solo responde si empiezas con su nombre: <i>"Oye Buddy, pon música"</i>. Después de cada respuesta puedes seguir hablando 25 s sin repetirlo. Cambia o añade palabras de activación en Ajustes.</p>
+    </div></div>
+    <div class="step"><div>
+      <h3>Comandos instantáneos (sin gastar IA)</h3>
+      <p>Estas frases se ejecutan al momento, incluso sin internet:</p>
+      <div class="chips">
+        <span>abre X</span><span>cierra X</span><span>busca X</span><span>sube el volumen</span><span>baja el volumen</span><span>silencio</span><span>qué hora es</span><span>qué día es</span><span>bloquea</span><span>pausa</span><span>siguiente</span><span>anterior</span><span>minimiza todo</span><span>captura de pantalla</span><span>ocúltate</span>
+      </div>
+      <p>Y crea tus propios <b>alias</b> en Ajustes → <i>Mis alias</i>: <code>mi correo = https://mail.google.com</code></p>
+    </div></div>
+  </div>
+</div></section>
+
+<section style="background:var(--bg2);border-block:1px solid var(--line)"><div class="wrap">
+  <p class="eyebrow">Seguridad</p>
+  <h2>Tú tienes la última palabra</h2>
+  <div class="safe">
+    <div class="card"><div class="ico">🛑</div><h3>Pide permiso en lo delicado</h3><p>Borrar archivos, apagar, cerrar a la fuerza, descargar o cambiar políticas siempre requiere tu OK. Puedes exigir permiso para todo.</p></div>
+    <div class="card"><div class="ico">✉️</div><h3>Nunca envía a escondidas</h3><p>En WhatsApp, Telegram, Discord, Slack, Teams o correo, te muestra el mensaje y espera tu confirmación.</p></div>
+    <div class="card"><div class="ico">🧱</div><h3>Lo que lee no son órdenes</h3><p>Si una web o un mensaje intenta darle instrucciones, lo trata como dato. Solo obedece lo que dices tú.</p></div>
+    <div class="card"><div class="ico">🔒</div><h3>Tus datos, en tu PC</h3><p>Los ajustes se guardan localmente. Solo se envía texto y audio a Groq para entenderte y responderte.</p></div>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <p class="eyebrow">Preguntas frecuentes</p>
+  <h2>¿Dudas?</h2>
+  <details><summary>¿De verdad es gratis? ¿Dónde está la trampa?</summary><p>No hay trampa. Buddy usa el plan gratuito de Groq (IA y reconocimiento de voz) y las voces gratuitas de Edge. No hay versión premium, ni anuncios, ni pagos dentro de la app.</p></details>
+  <details><summary>¿El plan gratis de Groq tiene límites?</summary><p>Sí, unos ~8000 tokens por minuto por modelo. Para uso normal sobra. Si te pasas, Buddy cambia a un modelo más pequeño o te pide esperar unos segundos.</p></details>
+  <details><summary>¿Funciona sin internet?</summary><p>Los comandos instantáneos y la voz de Windows sí. Para conversar y entenderte por voz necesita internet, salvo que uses Ollama en local.</p></details>
+  <details><summary>¿Puedo usar mi plan de Claude?</summary><p>Sí. En Ajustes → Cerebro elige "Claude". Usa el CLI oficial con tu sesión (<code>claude /login</code>). Es más lento pero muy capaz.</p></details>
+  <details><summary>¿En qué apps puede pulsar botones o leer la pantalla?</summary><p>En las que exponen accesibilidad de Windows: navegadores, WhatsApp, Calculadora, Office y la mayoría de apps. En juegos o apps con interfaz propia usa la visión o atajos de teclado.</p></details>
+  <details><summary>Lo cerré y no lo encuentro</summary><p>Si lo ocultaste (🙈) sigue en la bandeja del sistema, junto al reloj. Si saliste (✕), ábrelo desde el acceso directo "Buddy". En Ajustes puedes hacer que inicie con Windows.</p></details>
+  <details><summary>¿Cómo lo desinstalo?</summary><p>Configuración de Windows → Aplicaciones → Buddy → Desinstalar.</p></details>
+</div></section>
+
+<section id="descargar" class="final"><div class="wrap">
+  <div class="bigbot"><img src="icon.png" alt="" width="96" height="96"></div>
+  <h2>Dale un compañero a tu escritorio</h2>
+  <p class="lead" style="margin:0 auto 28px">Gratis, sin registro en nuestra web, sin pagos. Descárgalo, pega tu key de Groq y empieza a hablar.</p>
+  <div class="cta" style="justify-content:center">
+    <a class="btn primary" href="https://github.com/KevinAndresG/PersonalAssistant/releases/latest">⬇ Descargar para Windows</a>
+    <a class="btn ghost" href="https://github.com/KevinAndresG/PersonalAssistant">Ver código en GitHub</a>
+  </div>
+  <p class="note">Windows 10/11 · ~120 MB</p>
+</div></section>
+
+<footer><div class="wrap">
+  <span>Buddy · Hecho por Kevin Andrés</span>
+  <span>Gratis y de código abierto</span>
+</div></footer>
+
+<script>
+const bot = document.getElementById('bot'), bubble = document.getElementById('bubble'), you = document.getElementById('you');
+const eyes = document.getElementById('eyes');
+let paused = 0;
+const setMood = m => { if (Date.now() >= paused) bot.className = m; };
+
+// ojos siguen el cursor
+addEventListener('pointermove', e => {
+  const r = bot.getBoundingClientRect();
+  const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height * .35);
+  const d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 300);
+  eyes.style.transform = `translate(${dx / d * 4 * k}px, ${dy / d * 3 * k}px)`;
+});
+
+const demos = [
+  ['Abre Spotify y pon música', 'Listo, abrí Spotify y le di play. ▶'],
+  ['¿Qué página tengo abierta?', 'Estás en YouTube, viendo un tutorial de cocina.'],
+  ['Dile a Ana por WhatsApp que ya voy', 'Escribí "ya voy" en el chat de Ana. ¿Lo envío?'],
+  ['Sube el volumen', 'Hecho, subí el volumen. 🔊'],
+  ['Escucha este video y resúmelo', 'Habla de 3 trucos para ahorrar batería en el móvil.'],
+  ['¿Cuánto espacio libre tengo?', 'Te quedan 214 GB libres en el disco C.'],
+  ['En la calculadora pulsa 9 + 3 =', 'Pulsado. El resultado es 12.'],
+];
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function type(el, text, ms) { el.textContent = ''; for (const ch of text) { el.textContent += ch; await wait(ms); } }
+
+async function loop() {
+  for (let i = 0; ; i = (i + 1) % demos.length) {
+    while (Date.now() < paused) await wait(300);
+    const [q, a] = demos[i];
+    setMood('listening'); you.classList.add('show'); await type(you, q, 45); await wait(700);
+    setMood('thinking'); await wait(1100);
+    you.classList.remove('show');
+    setMood('speaking'); bubble.classList.add('show'); await type(bubble, a, 38); await wait(600);
+    setMood('happy'); await wait(1300);
+    setMood('idle'); await wait(2200);
+    bubble.classList.remove('show'); await wait(400);
+  }
+}
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) loop();
+
+// botones de estados: pausan la demo unos segundos
+document.getElementById('moods').addEventListener('click', e => {
+  const m = e.target.dataset.m; if (!m) return;
+  paused = Date.now() + 6000; bot.className = m;
+});
+</script>
+</body>
+</html>
